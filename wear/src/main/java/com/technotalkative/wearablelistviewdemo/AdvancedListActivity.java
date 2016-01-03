@@ -94,7 +94,7 @@ public class AdvancedListActivity extends Activity implements WearableListView.C
         }
     }
 
-    private final class MyItemView extends FrameLayout implements WearableListView.Item {
+    private final class MyItemView extends FrameLayout implements WearableListView.OnCenterProximityListener {
 
         final CircledImageView imgView;
         final TextView txtView;
@@ -112,39 +112,17 @@ public class AdvancedListActivity extends Activity implements WearableListView.C
         }
 
         @Override
-        public float getProximityMinValue() {
-            return mDefaultCircleRadius;
+        public void onCenterPosition(boolean b) {
+            //Animation example to be ran when the view becomes the centered one
+            imgView.animate().scaleX(1f).scaleY(1f).alpha(1);
+            txtView.animate().scaleX(1f).scaleY(1f).alpha(1);
         }
 
         @Override
-        public float getProximityMaxValue() {
-            return mSelectedCircleRadius;
-        }
-
-        @Override
-        public float getCurrentProximityValue() {
-            return mScale;
-        }
-
-        @Override
-        public void setScalingAnimatorValue(float value) {
-            mScale = value;
-            imgView.setCircleRadius(mScale);
-            imgView.setCircleRadiusPressed(mScale);
-        }
-
-        @Override
-        public void onScaleUpStart() {
-            imgView.setAlpha(1f);
-            txtView.setAlpha(1f);
-            imgView.setCircleColor(mChosenCircleColor);
-        }
-
-        @Override
-        public void onScaleDownStart() {
-            imgView.setAlpha(0.5f);
-            txtView.setAlpha(0.5f);
-            imgView.setCircleColor(mFadedCircleColor);
+        public void onNonCenterPosition(boolean b) {
+            //Animation example to be ran when the view is not the centered one anymore
+            imgView.animate().scaleX(0.8f).scaleY(0.8f).alpha(0.6f);
+            txtView.animate().scaleX(0.8f).scaleY(0.8f).alpha(0.6f);
         }
     }
 }
