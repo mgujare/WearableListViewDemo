@@ -2,6 +2,8 @@ package com.technotalkative.wearablelistviewdemo;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.wearable.view.CircledImageView;
 import android.support.wearable.view.WatchViewStub;
@@ -11,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.google.android.gms.wearable.DataMap;
+import com.technotalkative.wearablelistviewdemo.model.DataObject;
 
 import java.util.ArrayList;
 
@@ -22,10 +26,19 @@ public class AdvancedListActivity extends Activity implements WearableListView.C
     private float mDefaultCircleRadius;
     private float mSelectedCircleRadius;
 
+    private ArrayList<DataObject> itemList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_listview);
+
+        //Get bunlde with dataMap.
+        Bundle bundle = getIntent().getBundleExtra("datamap");
+        if (bundle != null) {
+            DataMap dataMap = DataMap.fromBundle(bundle);
+            itemList = getDataItemListList(dataMap);
+        }
 
         mDefaultCircleRadius = getResources().getDimension(R.dimen.default_settings_circle_radius);
         mSelectedCircleRadius = getResources().getDimension(R.dimen.selected_settings_circle_radius);
@@ -40,6 +53,23 @@ public class AdvancedListActivity extends Activity implements WearableListView.C
                 mListView.setClickListener(AdvancedListActivity.this);
             }
         });
+    }
+
+    /**
+     * Convert DataMap list into ArrayList of Objects.
+     * @param dMap
+     * @return
+     */
+    private ArrayList<DataObject> getDataItemListList(DataMap dMap) {
+        ArrayList<DataObject> llist = new ArrayList<>();
+        ArrayList<DataMap> dmapList = dMap.getDataMapArrayList("DATA_LIST");
+        if (dmapList != null && dmapList.size() > 0) {
+            for (DataMap dataMap : dmapList) {
+                DataObject item = new DataObject(dataMap);
+                llist.add(item);
+            }
+        }
+        return llist;
     }
 
     private static ArrayList<Integer> listItems;
@@ -69,6 +99,22 @@ public class AdvancedListActivity extends Activity implements WearableListView.C
         Toast.makeText(this, "You tapped Top empty area", Toast.LENGTH_SHORT).show();
     }
 
+    private void openWebUrl() {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.cnn.com"));
+        startActivity(browserIntent);
+    }
+
+    /**
+     * Method to open map directions on your handheld.
+     */
+    private void openMapDirections() {
+        Uri gmmIntentUri = Uri.parse("google.navigation:q=Golden+Gate+Park,+San Francisco+USA");
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+        startActivity(mapIntent);
+
+    }
+
     public class MyListAdapter extends WearableListView.Adapter {
 
         @Override
@@ -81,7 +127,7 @@ public class AdvancedListActivity extends Activity implements WearableListView.C
             MyItemView itemView = (MyItemView) viewHolder.itemView;
 
             TextView txtView = (TextView) itemView.findViewById(R.id.text);
-            txtView.setText(String.format("Item %d", i));
+            txtView.setText(itemList.get(i).getName());
 
             Integer resourceId = listItems.get(i);
             CircledImageView imgView = (CircledImageView) itemView.findViewById(R.id.image);
